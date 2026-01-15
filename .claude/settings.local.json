@@ -3,7 +3,21 @@
     "allow": [
       "Bash(npx expo install:*)",
       "Bash(npx expo export:*)",
-      "Bash(npx vercel --prod --yes)"
+      "Bash(npx vercel --prod --yes)",
+      "Bash(node scripts/fix-module.js:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npx vercel:*)",
+      "Bash(del \"\\\\?\\\\c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint\\\\nul\")",
+      "Bash(cmd /c \"del \\\\?\\\\c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint\\\\nul\")",
+      "Bash(git -C \"c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint\" status)",
+      "Bash(powershell -Command \"Remove-Item -LiteralPath ''\\\\?\\\\c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint\\\\nul'' -Force\")",
+      "Bash(cmd /c \"pushd c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint && del /f nul && popd\")",
+      "Bash(cmd /c \"cd /d c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint && ren nul nul.txt && del nul.txt\")",
+      "Bash(cmd /c \"dir c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint\\\\nul\")",
+      "Bash(cmd /c \"cd /d c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint && dir /a\")",
+      "Bash(powershell -Command:*)",
+      "Bash(cmd /c \"fsutil file setZeroData offset=0 length=0 c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint\\\\nul 2>nul & del /f /q c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint\\\\nul\")"
     ]
   }
 }

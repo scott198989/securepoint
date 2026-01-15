@@ -44,3 +44,6 @@ yarn-error.*
 
 .vercel
 .env*.local
+
+# Windows reserved device names (accidentally created)
+nul
