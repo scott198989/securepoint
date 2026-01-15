@@ -67,6 +67,7 @@ export const lightTheme = {
     card: '#f5f5f5',
     text: colors.gray[900],
     textSecondary: colors.gray[600],
+    textTertiary: colors.gray[400],
     border: colors.gray[300],
     notification: colors.error,
     // Custom
@@ -75,6 +76,7 @@ export const lightTheme = {
     income: colors.income,
     expense: colors.expense,
     warning: colors.warning,
+    info: colors.info,
     divider: colors.gray[200],
     disabled: colors.gray[400],
     placeholder: colors.gray[500],
@@ -97,6 +99,7 @@ export const darkTheme = {
     card: '#1e1e1e',
     text: '#ffffff',
     textSecondary: colors.gray[400],
+    textTertiary: colors.gray[500],
     border: colors.gray[800],
     notification: colors.error,
     // Custom
@@ -105,6 +108,7 @@ export const darkTheme = {
     income: '#81c784',
     expense: '#ef5350',
     warning: '#ffb74d',
+    info: '#64b5f6',
     divider: colors.gray[800],
     disabled: colors.gray[600],
     placeholder: colors.gray[500],
