@@ -46,6 +46,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
 
 const DEFAULT_MILITARY_PROFILE: MilitaryProfile = {
   status: 'active_duty',
+  branch: 'navy', // Default for testing - users will select in onboarding
 };
 
 export const useAuthStore = create<AuthState>()(

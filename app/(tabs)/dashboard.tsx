@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme, useAuth, useMonthlyTransactions, useRecentTransactions, useFinancialOverview } from '../../hooks';
-import { Card, StatCard } from '../../components/common';
+import { useTheme, useAuth, useMonthlyTransactions, useRecentTransactions, useFinancialOverview, useMilitaryBackground } from '../../hooks';
+import { Card, StatCard, MilitaryBackground } from '../../components/common';
 import { formatCurrency, formatDate, formatMonthYear } from '../../utils/formatters';
 import { typography, borderRadius } from '../../constants/theme';
 import { useTransactionStore } from '../../store';
@@ -21,6 +21,7 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const theme = useTheme();
   const { user } = useAuth();
+  const { branchName } = useMilitaryBackground();
   const monthlySummary = useMonthlyTransactions();
   const recentTransactions = useRecentTransactions(5);
   const { totalBalance, totalSavings, totalDebt, netWorth } = useFinancialOverview();
@@ -45,30 +46,36 @@ export default function DashboardScreen() {
   };
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-      contentContainerStyle={[
-        styles.content,
-        { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 100 },
-      ]}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={[styles.greeting, { color: theme.colors.textSecondary }]}>
-            Welcome back,
-          </Text>
-          <Text style={[styles.userName, { color: theme.colors.text }]}>
-            {user?.displayName || 'User'}
+    <MilitaryBackground overlayOpacity={0.88}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 100 },
+        ]}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={[styles.greeting, { color: theme.colors.textSecondary }]}>
+              Welcome back,
+            </Text>
+            <Text style={[styles.userName, { color: theme.colors.text }]}>
+              {user?.displayName || 'User'}
+            </Text>
+            {branchName && (
+              <Text style={[styles.branchName, { color: theme.colors.primary }]}>
+                {branchName}
+              </Text>
+            )}
+          </View>
+          <Text style={[styles.date, { color: theme.colors.textSecondary }]}>
+            {formatMonthYear(new Date())}
           </Text>
         </View>
-        <Text style={[styles.date, { color: theme.colors.textSecondary }]}>
-          {formatMonthYear(new Date())}
-        </Text>
-      </View>
 
       {/* Net Worth Card */}
       <Card style={[styles.netWorthCard, { backgroundColor: theme.colors.primary }]}>
@@ -229,7 +236,8 @@ export default function DashboardScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </MilitaryBackground>
   );
 }
 
@@ -252,6 +260,11 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: typography.fontSize.xxl,
     fontWeight: typography.fontWeight.bold,
+  },
+  branchName: {
+    fontSize: typography.fontSize.sm,
+    fontWeight: typography.fontWeight.semibold,
+    marginTop: 4,
   },
   date: {
     fontSize: typography.fontSize.sm,
