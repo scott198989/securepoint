@@ -2,10 +2,10 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Budget, SavingsGoal, Debt, DebtPayoffPlan, BudgetCategory } from '../types';
 import { generateId } from '../utils';
 import { calculateSnowballPayoff, calculateAvalanchePayoff } from '../utils/calculations/budgetMath';
+import { storage } from '../utils/storage';
 
 interface BudgetState {
   budgets: Budget[];
@@ -237,7 +237,7 @@ export const useBudgetStore = create<BudgetState>()(
     }),
     {
       name: 'securepoint-budget',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => storage),
     }
   )
 );

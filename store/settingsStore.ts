@@ -2,8 +2,8 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserSettings } from '../types';
+import { storage } from '../utils/storage';
 
 interface SettingsState {
   settings: UserSettings;
@@ -77,7 +77,7 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'securepoint-settings',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => storage),
     }
   )
 );

@@ -2,9 +2,9 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User, MilitaryProfile, UserSettings } from '../types';
 import { generateId } from '../utils';
+import { storage } from '../utils/storage';
 
 interface AuthState {
   user: User | null;
@@ -167,7 +167,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'securepoint-auth',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => storage),
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,

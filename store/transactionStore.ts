@@ -2,7 +2,6 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   Transaction,
   Account,
@@ -13,6 +12,7 @@ import {
 } from '../types';
 import { generateId, sortByDate, groupBy } from '../utils';
 import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from '../constants/categories';
+import { storage } from '../utils/storage';
 
 interface TransactionState {
   transactions: Transaction[];
@@ -315,7 +315,7 @@ export const useTransactionStore = create<TransactionState>()(
     }),
     {
       name: 'securepoint-transactions',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => storage),
     }
   )
 );
