@@ -18,7 +18,7 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, displayName?: string) => Promise<boolean>;
+  register: (email: string, password: string, displayName?: string, militaryProfile?: Partial<MilitaryProfile>) => Promise<boolean>;
   logout: () => void;
   updateProfile: (updates: Partial<User>) => void;
   updateMilitaryProfile: (profile: Partial<MilitaryProfile>) => void;
@@ -98,12 +98,18 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      register: async (email: string, _password: string, displayName?: string) => {
+      register: async (email: string, _password: string, displayName?: string, militaryProfile?: Partial<MilitaryProfile>) => {
         set({ isLoading: true, error: null });
 
         try {
           // Simulate API call
           await new Promise((resolve) => setTimeout(resolve, 1000));
+
+          // Merge provided military profile with defaults
+          const finalMilitaryProfile: MilitaryProfile = {
+            ...DEFAULT_MILITARY_PROFILE,
+            ...militaryProfile,
+          };
 
           const user: User = {
             id: generateId(),
@@ -111,12 +117,13 @@ export const useAuthStore = create<AuthState>()(
             displayName: displayName || email.split('@')[0],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            militaryProfile: DEFAULT_MILITARY_PROFILE,
+            militaryProfile: finalMilitaryProfile,
             isPremium: false,
             settings: DEFAULT_USER_SETTINGS,
           };
 
-          set({ user, isAuthenticated: true, isLoading: false, isOnboarded: false });
+          // Mark as onboarded since we collected profile during registration
+          set({ user, isAuthenticated: true, isLoading: false, isOnboarded: true });
           return true;
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Registration failed';

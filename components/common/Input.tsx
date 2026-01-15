@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   TextInputProps,
   ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { useTheme } from '../../hooks';
 import { borderRadius, typography } from '../../constants/theme';
@@ -20,7 +21,7 @@ interface InputProps extends Omit<TextInputProps, 'style'> {
   rightIcon?: React.ReactNode;
   onRightIconPress?: () => void;
   containerStyle?: ViewStyle;
-  inputStyle?: ViewStyle;
+  inputStyle?: TextStyle;
 }
 
 export function Input({

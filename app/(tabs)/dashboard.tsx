@@ -46,7 +46,7 @@ export default function DashboardScreen() {
   };
 
   return (
-    <MilitaryBackground overlayOpacity={0.88}>
+    <MilitaryBackground overlayOpacity={0.65}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={[
@@ -172,7 +172,7 @@ export default function DashboardScreen() {
               <TouchableOpacity
                 key={transaction.id}
                 style={[styles.transactionItem, { borderBottomColor: theme.colors.border }]}
-                onPress={() => router.push(`/transactions/${transaction.id}`)}
+                onPress={() => router.push(`/transactions/${transaction.id}` as any)}
               >
                 <View
                   style={[

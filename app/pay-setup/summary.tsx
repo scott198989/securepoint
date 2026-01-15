@@ -67,7 +67,7 @@ export default function SummaryStepScreen() {
   };
 
   const handleEditProfile = () => {
-    router.push('/pay-setup');
+    router.push('/pay-setup' as any);
   };
 
   return (

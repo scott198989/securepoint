@@ -93,7 +93,7 @@ export function getValidationError<T>(
 ): string | null {
   const result = schema.safeParse(data);
   if (result.success) return null;
-  return result.error.errors[0]?.message || 'Validation failed';
+  return result.error.issues[0]?.message || 'Validation failed';
 }
 
 // Sanitize input (remove potentially harmful characters)

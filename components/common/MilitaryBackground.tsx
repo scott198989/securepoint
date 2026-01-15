@@ -8,14 +8,14 @@ import { useMilitaryBackground, useTheme } from '../../hooks';
 interface MilitaryBackgroundProps {
   children: React.ReactNode;
   style?: ViewStyle;
-  overlayOpacity?: number; // 0-1, default 0.85 for readability
+  overlayOpacity?: number; // 0-1, default 0.6 for visibility while maintaining readability
   showBackground?: boolean; // Allow disabling background
 }
 
 export function MilitaryBackground({
   children,
   style,
-  overlayOpacity = 0.85,
+  overlayOpacity = 0.6,
   showBackground = true,
 }: MilitaryBackgroundProps) {
   const { background, hasBackground } = useMilitaryBackground();

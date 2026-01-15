@@ -19,7 +19,8 @@
       "Bash(powershell -Command:*)",
       "Bash(cmd /c \"fsutil file setZeroData offset=0 length=0 c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint\\\\nul 2>nul & del /f /q c:\\\\Users\\\\Scott\\\\Desktop\\\\securepoint\\\\nul\")",
       "Bash(npx tsc:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(timeout /t 10 /nobreak)"
     ]
   }
 }

@@ -10,7 +10,7 @@ interface UseAuthReturn {
   error: string | null;
   isOnboarded: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (email: string, password: string, displayName?: string) => Promise<boolean>;
+  register: (email: string, password: string, displayName?: string, militaryProfile?: Partial<MilitaryProfile>) => Promise<boolean>;
   logout: () => void;
   updateProfile: (updates: Partial<User>) => void;
   updateMilitaryProfile: (profile: Partial<MilitaryProfile>) => void;

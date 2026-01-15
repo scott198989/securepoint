@@ -16,6 +16,16 @@ export type PayGrade =
   | 'W-1' | 'W-2' | 'W-3' | 'W-4' | 'W-5'
   | 'O-1' | 'O-2' | 'O-3' | 'O-4' | 'O-5' | 'O-6' | 'O-7' | 'O-8' | 'O-9' | 'O-10';
 
+// Orders type for TCS/TDY/PCS
+export type OrdersType = 'none' | 'tcs' | 'tdy' | 'pcs';
+
+// Guard/Reserve Title status
+export type GuardReserveTitle =
+  | 'title_10'      // Federal active duty orders
+  | 'title_32_ados' // Active Duty Operational Support
+  | 'title_32_agr'  // Active Guard Reserve (full-time)
+  | 'm_day';        // Traditional drilling member
+
 export interface MilitaryProfile {
   status: MilitaryStatus;
   branch?: MilitaryBranch;
@@ -24,9 +34,16 @@ export interface MilitaryProfile {
   dutyStation?: string;
   bahLocation?: string;
   isDeployed?: boolean;
-  etsDate?: string; // ISO date string
+  etsDate?: string; // ISO date string - Expiration Term of Service
   retirementDate?: string;
   vaDisabilityRating?: number; // 0-100
+
+  // New fields for enhanced profile
+  baseEntryDate?: string;      // BASD - Base Active Service Date
+  ordersType?: OrdersType;     // TCS, TDY, PCS, or none
+  ordersZipCode?: string;      // ZIP for TCS/TDY/PCS location
+  guardReserveTitle?: GuardReserveTitle; // For Guard/Reserve members
+  milEmail?: string;           // .mil email address
 }
 
 export interface User {
