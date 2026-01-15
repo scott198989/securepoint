@@ -46,7 +46,7 @@ export default function DashboardScreen() {
   };
 
   return (
-    <MilitaryBackground overlayOpacity={0.65}>
+    <MilitaryBackground overlayOpacity={0.4}>
       <ScrollView
         style={styles.container}
         contentContainerStyle={[

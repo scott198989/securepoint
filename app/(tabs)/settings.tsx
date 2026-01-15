@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,21 +26,30 @@ export default function SettingsScreen() {
   const { settings, setTheme, setNotificationPreference, setPrivacyPreference } = useSettingsStore();
 
   const handleLogout = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: () => {
-            logout();
-            router.replace('/(auth)/login');
+    const performLogout = () => {
+      logout();
+      router.replace('/(auth)/login');
+    };
+
+    if (Platform.OS === 'web') {
+      // Use browser confirm for web
+      if (window.confirm('Are you sure you want to sign out?')) {
+        performLogout();
+      }
+    } else {
+      Alert.alert(
+        'Sign Out',
+        'Are you sure you want to sign out?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Sign Out',
+            style: 'destructive',
+            onPress: performLogout,
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const SettingsItem = ({
@@ -212,14 +222,24 @@ export default function SettingsScreen() {
         <SettingsItem
           label="Delete All Data"
           onPress={() => {
-            Alert.alert(
-              'Delete All Data',
-              'This will permanently delete all your data. This action cannot be undone.',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Delete', style: 'destructive', onPress: () => {/* Handle delete */} },
-              ]
-            );
+            const handleDelete = () => {
+              // Handle delete - clear all stores
+            };
+
+            if (Platform.OS === 'web') {
+              if (window.confirm('This will permanently delete all your data. This action cannot be undone. Are you sure?')) {
+                handleDelete();
+              }
+            } else {
+              Alert.alert(
+                'Delete All Data',
+                'This will permanently delete all your data. This action cannot be undone.',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { text: 'Delete', style: 'destructive', onPress: handleDelete },
+                ]
+              );
+            }
           }}
           rightElement={
             <Text style={{ color: theme.colors.expense }}>Delete</Text>
