@@ -4,3 +4,4 @@ export * from './user';
 export * from './military';
 export * from './transaction';
 export * from './budget';
+export * from './payProfile';

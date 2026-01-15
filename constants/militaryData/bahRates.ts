@@ -128,9 +128,26 @@ export function getBAHRate(
   return withDependents ? rate.withDependents : rate.withoutDependents;
 }
 
-// Find MHA by zip code
-export function findMHAByZip(zipCode: string): BAHRateEntry | null {
+// Find MHA code by zip code (returns just the MHA code string)
+export function findMHAByZip(zipCode: string): string | null {
+  const area = SAMPLE_BAH_RATES.find(area => area.zipCodes.includes(zipCode));
+  return area ? area.mha : null;
+}
+
+// Get MHA entry by zip code (returns full entry)
+export function getMHAEntryByZip(zipCode: string): BAHRateEntry | null {
   return SAMPLE_BAH_RATES.find(area => area.zipCodes.includes(zipCode)) || null;
+}
+
+// Get MHA name by MHA code
+export function getMHAName(mhaCode: string): string | null {
+  const area = SAMPLE_BAH_RATES.find(area => area.mha === mhaCode);
+  return area ? area.mhaName : null;
+}
+
+// Get MHA entry by MHA code
+export function getMHAEntry(mhaCode: string): BAHRateEntry | null {
+  return SAMPLE_BAH_RATES.find(area => area.mha === mhaCode) || null;
 }
 
 // Get all available MHAs

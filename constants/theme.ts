@@ -74,6 +74,7 @@ export const lightTheme = {
     surfaceVariant: colors.gray[100],
     income: colors.income,
     expense: colors.expense,
+    warning: colors.warning,
     divider: colors.gray[200],
     disabled: colors.gray[400],
     placeholder: colors.gray[500],
@@ -103,6 +104,7 @@ export const darkTheme = {
     surfaceVariant: '#2d2d2d',
     income: '#81c784',
     expense: '#ef5350',
+    warning: '#ffb74d',
     divider: colors.gray[800],
     disabled: colors.gray[600],
     placeholder: colors.gray[500],
@@ -177,6 +179,16 @@ export const borderRadius = {
   lg: 16,
   xl: 24,
   full: 9999,
+};
+
+// Standalone spacing export for components
+export const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
 };
 
 export type Theme = typeof lightTheme;
