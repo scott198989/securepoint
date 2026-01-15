@@ -1,7 +1,6 @@
 // Entry point - redirects based on auth state
 
-import { useEffect } from 'react';
-import { router } from 'expo-router';
+import { Redirect } from 'expo-router';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useAuth, useTheme } from '../hooks';
 
@@ -9,21 +8,21 @@ export default function Index() {
   const { isAuthenticated, isLoading } = useAuth();
   const theme = useTheme();
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (isAuthenticated) {
-        router.replace('/(tabs)/dashboard');
-      } else {
-        router.replace('/(auth)/login');
-      }
-    }
-  }, [isAuthenticated, isLoading]);
+  // Show loading while checking auth state
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
 
-  return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ActivityIndicator size="large" color={theme.colors.primary} />
-    </View>
-  );
+  // Redirect based on auth state
+  if (isAuthenticated) {
+    return <Redirect href="/(tabs)/dashboard" />;
+  }
+
+  return <Redirect href="/(auth)/login" />;
 }
 
 const styles = StyleSheet.create({
