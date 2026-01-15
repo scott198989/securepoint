@@ -78,7 +78,7 @@ export default function DashboardScreen() {
         </View>
 
       {/* Net Worth Card */}
-      <Card style={[styles.netWorthCard, { backgroundColor: theme.colors.primary }]}>
+      <Card style={[styles.netWorthCard, { backgroundColor: theme.colors.primary + 'CC' }]} glass={false}>
         <Text style={styles.netWorthLabel}>Net Worth</Text>
         <Text style={styles.netWorthValue}>{formatCurrency(netWorth)}</Text>
         <View style={styles.netWorthDetails}>
@@ -218,7 +218,14 @@ export default function DashboardScreen() {
       {/* Quick Actions */}
       <View style={styles.quickActions}>
         <TouchableOpacity
-          style={[styles.quickAction, { backgroundColor: theme.colors.card }]}
+          style={[
+            styles.quickAction,
+            {
+              backgroundColor: theme.isDark ? 'rgba(30, 30, 30, 0.6)' : 'rgba(255, 255, 255, 0.6)',
+              borderWidth: 1,
+              borderColor: theme.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
+            },
+          ]}
           onPress={() => router.push('/add-transaction')}
         >
           <Text style={styles.quickActionIcon}>+</Text>
@@ -227,7 +234,14 @@ export default function DashboardScreen() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.quickAction, { backgroundColor: theme.colors.card }]}
+          style={[
+            styles.quickAction,
+            {
+              backgroundColor: theme.isDark ? 'rgba(30, 30, 30, 0.6)' : 'rgba(255, 255, 255, 0.6)',
+              borderWidth: 1,
+              borderColor: theme.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
+            },
+          ]}
           onPress={() => router.push('/(tabs)/budget')}
         >
           <Text style={styles.quickActionIcon}>◈</Text>

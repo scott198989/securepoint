@@ -1,4 +1,4 @@
-// Card component for content containers
+// Card component for content containers with glassmorphism
 
 import React from 'react';
 import {
@@ -8,9 +8,11 @@ import {
   TouchableOpacity,
   StyleProp,
   ViewStyle,
+  Platform,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { useTheme } from '../../hooks';
-import { borderRadius, shadows, typography } from '../../constants/theme';
+import { borderRadius, typography } from '../../constants/theme';
 
 interface CardProps {
   children: React.ReactNode;
@@ -19,6 +21,7 @@ interface CardProps {
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
   noPadding?: boolean;
+  glass?: boolean; // Enable glassmorphism
 }
 
 export function Card({
@@ -28,21 +31,12 @@ export function Card({
   onPress,
   style,
   noPadding = false,
+  glass = true, // Default to glass effect
 }: CardProps) {
   const theme = useTheme();
 
-  const content = (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: theme.colors.card,
-        },
-        !noPadding && styles.padding,
-        shadows.sm,
-        style,
-      ]}
-    >
+  const cardContent = (
+    <>
       {(title || subtitle) && (
         <View style={styles.header}>
           {title && (
@@ -58,6 +52,45 @@ export function Card({
         </View>
       )}
       {children}
+    </>
+  );
+
+  // Glass effect wrapper
+  const glassStyle = glass ? {
+    backgroundColor: theme.isDark
+      ? 'rgba(30, 30, 30, 0.6)'
+      : 'rgba(255, 255, 255, 0.6)',
+    borderWidth: 1,
+    borderColor: theme.isDark
+      ? 'rgba(255, 255, 255, 0.15)'
+      : 'rgba(0, 0, 0, 0.1)',
+  } : {
+    backgroundColor: theme.colors.card,
+  };
+
+  const content = Platform.OS === 'ios' && glass ? (
+    <BlurView
+      intensity={40}
+      tint={theme.isDark ? 'dark' : 'light'}
+      style={[
+        styles.card,
+        { borderWidth: 1, borderColor: theme.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' },
+        !noPadding && styles.padding,
+        style,
+      ]}
+    >
+      {cardContent}
+    </BlurView>
+  ) : (
+    <View
+      style={[
+        styles.card,
+        glassStyle,
+        !noPadding && styles.padding,
+        style,
+      ]}
+    >
+      {cardContent}
     </View>
   );
 
@@ -72,7 +105,7 @@ export function Card({
   return content;
 }
 
-// Stat card variant for dashboard metrics
+// Stat card variant for dashboard metrics with glassmorphism
 interface StatCardProps {
   label: string;
   value: string;
@@ -95,14 +128,19 @@ export function StatCard({
 }: StatCardProps) {
   const theme = useTheme();
 
-  const content = (
-    <View
-      style={[
-        styles.statCard,
-        { backgroundColor: theme.colors.card },
-        shadows.sm,
-      ]}
-    >
+  // Glassmorphism style
+  const glassStyle = {
+    backgroundColor: theme.isDark
+      ? 'rgba(30, 30, 30, 0.6)'
+      : 'rgba(255, 255, 255, 0.6)',
+    borderWidth: 1,
+    borderColor: theme.isDark
+      ? 'rgba(255, 255, 255, 0.15)'
+      : 'rgba(0, 0, 0, 0.1)',
+  };
+
+  const cardInner = (
+    <>
       <View style={styles.statHeader}>
         {icon && (
           <View
@@ -152,6 +190,23 @@ export function StatCard({
       <Text style={[styles.statLabel, { color: theme.colors.textSecondary }]}>
         {label}
       </Text>
+    </>
+  );
+
+  const content = Platform.OS === 'ios' ? (
+    <BlurView
+      intensity={40}
+      tint={theme.isDark ? 'dark' : 'light'}
+      style={[
+        styles.statCard,
+        { borderWidth: 1, borderColor: theme.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)' },
+      ]}
+    >
+      {cardInner}
+    </BlurView>
+  ) : (
+    <View style={[styles.statCard, glassStyle]}>
+      {cardInner}
     </View>
   );
 
