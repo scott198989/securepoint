@@ -1,6 +1,6 @@
-// Budget screen with entry fields
+// Budget screen with entry fields and charts
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -15,10 +15,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, useBudget, useMonthlyTransactions, useTransactions } from '../../hooks';
-import { Card, MilitaryBackground, Input } from '../../components/common';
+import { Card, MilitaryBackground, PieChart, BarChart } from '../../components/common';
 import { formatCurrency, formatPercent, formatMonthYear } from '../../utils/formatters';
 import { typography, borderRadius, spacing } from '../../constants/theme';
-import { useBudgetStore } from '../../store';
 
 interface BudgetItem {
   categoryId: string;
@@ -37,12 +36,18 @@ export default function BudgetScreen() {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [budgetItems, setBudgetItems] = useState<BudgetItem[]>([]);
   const [totalMonthlyBudget, setTotalMonthlyBudget] = useState('');
+  const [initialized, setInitialized] = useState(false);
 
   // Get expense categories only
-  const expenseCategories = categories.filter((c) => c.type === 'expense');
+  const expenseCategories = useMemo(
+    () => categories.filter((c) => c.type === 'expense'),
+    [categories]
+  );
 
-  // Initialize budget items from active budget or spending data
+  // Initialize budget items from active budget or spending data (only once)
   useEffect(() => {
+    if (initialized) return;
+
     if (activeBudget?.categories && activeBudget.categories.length > 0) {
       const items = activeBudget.categories.map((cb) => {
         const spending = monthlySummary.byCategory.find((s) => s.categoryId === cb.categoryId);
@@ -54,35 +59,55 @@ export default function BudgetScreen() {
       });
       setBudgetItems(items);
       setTotalMonthlyBudget(activeBudget.totalBudgeted.toString());
-    } else {
-      // Initialize with spending categories
-      const items = monthlySummary.byCategory
-        .filter((c) => {
-          const category = categories.find((cat) => cat.id === c.categoryId);
-          return category?.type === 'expense';
-        })
-        .map((c) => ({
-          categoryId: c.categoryId,
+      setInitialized(true);
+    } else if (expenseCategories.length > 0) {
+      // Initialize with all expense categories
+      const items = expenseCategories.map((cat) => {
+        const spending = monthlySummary.byCategory.find((s) => s.categoryId === cat.id);
+        return {
+          categoryId: cat.id,
           budgeted: 0,
-          spent: c.total,
-        }));
+          spent: spending?.total || 0,
+        };
+      });
       setBudgetItems(items);
+      setInitialized(true);
     }
-  }, [activeBudget, monthlySummary.byCategory, categories]);
+  }, [activeBudget, monthlySummary.byCategory, expenseCategories, initialized]);
 
-  const getCategoryInfo = (categoryId: string) => {
-    const category = categories.find((c) => c.id === categoryId);
-    return {
-      name: category?.name || 'Unknown',
-      color: category?.color || theme.colors.textSecondary,
-      icon: category?.icon || 'help-circle',
-    };
-  };
+  // Update spent amounts when transactions change (but don't reset budgeted)
+  useEffect(() => {
+    if (!initialized || budgetItems.length === 0) return;
 
-  const totalBudgeted = budgetItems.reduce((sum, item) => sum + item.budgeted, 0);
+    setBudgetItems((prev) =>
+      prev.map((item) => {
+        const spending = monthlySummary.byCategory.find((s) => s.categoryId === item.categoryId);
+        return { ...item, spent: spending?.total || 0 };
+      })
+    );
+  }, [monthlySummary.byCategory, initialized]);
+
+  const getCategoryInfo = useCallback(
+    (categoryId: string) => {
+      const category = categories.find((c) => c.id === categoryId);
+      return {
+        name: category?.name || 'Unknown',
+        color: category?.color || theme.colors.textSecondary,
+        icon: category?.icon || 'help-circle',
+      };
+    },
+    [categories, theme.colors.textSecondary]
+  );
+
+  const totalBudgeted = useMemo(
+    () => budgetItems.reduce((sum, item) => sum + item.budgeted, 0),
+    [budgetItems]
+  );
+
   const totalSpent = monthlySummary.totalExpenses;
-  const remaining = (parseFloat(totalMonthlyBudget) || totalBudgeted) - totalSpent;
-  const spentPercent = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
+  const budgetAmount = parseFloat(totalMonthlyBudget) || totalBudgeted;
+  const remaining = budgetAmount - totalSpent;
+  const spentPercent = budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0;
 
   const handleBudgetChange = (categoryId: string, value: string) => {
     const numValue = parseFloat(value) || 0;
@@ -113,13 +138,15 @@ export default function BudgetScreen() {
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
     const totalBudgetAmount = parseFloat(totalMonthlyBudget) || totalBudgeted;
 
-    const budgetCategories = budgetItems.map((item) => ({
-      categoryId: item.categoryId,
-      budgeted: item.budgeted,
-      spent: item.spent,
-      remaining: item.budgeted - item.spent,
-      rollover: false,
-    }));
+    const budgetCategories = budgetItems
+      .filter((item) => item.budgeted > 0) // Only save categories with budget set
+      .map((item) => ({
+        categoryId: item.categoryId,
+        budgeted: item.budgeted,
+        spent: item.spent,
+        remaining: item.budgeted - item.spent,
+        rollover: false,
+      }));
 
     if (activeBudget) {
       updateBudget(activeBudget.id, {
@@ -127,7 +154,6 @@ export default function BudgetScreen() {
         totalBudgeted: totalBudgetAmount,
         totalSpent: totalSpent,
         categories: budgetCategories,
-        updatedAt: now.toISOString(),
       });
     } else {
       addBudget({
@@ -153,9 +179,42 @@ export default function BudgetScreen() {
   };
 
   // Categories not in budget yet
-  const availableCategories = expenseCategories.filter(
-    (cat) => !budgetItems.find((item) => item.categoryId === cat.id)
+  const availableCategories = useMemo(
+    () => expenseCategories.filter((cat) => !budgetItems.find((item) => item.categoryId === cat.id)),
+    [expenseCategories, budgetItems]
   );
+
+  // Chart data
+  const pieChartData = useMemo(() => {
+    return budgetItems
+      .filter((item) => item.spent > 0)
+      .sort((a, b) => b.spent - a.spent)
+      .slice(0, 6)
+      .map((item) => {
+        const category = getCategoryInfo(item.categoryId);
+        return {
+          value: item.spent,
+          color: category.color,
+          label: category.name,
+        };
+      });
+  }, [budgetItems, getCategoryInfo]);
+
+  const barChartData = useMemo(() => {
+    return budgetItems
+      .filter((item) => item.budgeted > 0)
+      .sort((a, b) => b.budgeted - a.budgeted)
+      .slice(0, 6)
+      .map((item) => {
+        const category = getCategoryInfo(item.categoryId);
+        return {
+          value: item.spent,
+          maxValue: item.budgeted,
+          color: category.color,
+          label: category.name,
+        };
+      });
+  }, [budgetItems, getCategoryInfo]);
 
   return (
     <MilitaryBackground overlayOpacity={0.4}>
@@ -227,10 +286,10 @@ export default function BudgetScreen() {
           <View style={styles.overviewHeader}>
             <View>
               <Text style={[styles.overviewLabel, { color: theme.colors.textSecondary }]}>
-                {isEditing ? 'Category Totals' : 'Monthly Budget'}
+                Monthly Budget
               </Text>
               <Text style={[styles.overviewAmount, { color: theme.colors.text }]}>
-                {formatCurrency(parseFloat(totalMonthlyBudget) || totalBudgeted)}
+                {formatCurrency(budgetAmount)}
               </Text>
             </View>
             <View style={styles.overviewStats}>
@@ -271,6 +330,25 @@ export default function BudgetScreen() {
             </View>
           </View>
         </Card>
+
+        {/* Spending Pie Chart */}
+        {!isEditing && pieChartData.length > 0 && (
+          <Card title="Spending Breakdown" style={styles.chartCard}>
+            <PieChart data={pieChartData} size={180} innerRadius={50} showLabels={true} />
+          </Card>
+        )}
+
+        {/* Budget vs Spent Bar Chart */}
+        {!isEditing && barChartData.length > 0 && (
+          <Card title="Budget vs Spending" style={styles.chartCard}>
+            <BarChart
+              data={barChartData}
+              barHeight={20}
+              showValues={true}
+              formatValue={formatCurrency}
+            />
+          </Card>
+        )}
 
         {/* Category Budgets */}
         <Card title="Category Budgets" style={styles.categoryCard}>
@@ -366,7 +444,8 @@ export default function BudgetScreen() {
                       <>
                         <View style={styles.amountRow}>
                           <Text style={[styles.spentText, { color: theme.colors.text }]}>
-                            {formatCurrency(item.spent)} / {formatCurrency(item.budgeted)}
+                            {formatCurrency(item.spent)}
+                            {item.budgeted > 0 && ` / ${formatCurrency(item.budgeted)}`}
                           </Text>
                           <Text
                             style={[
@@ -377,17 +456,19 @@ export default function BudgetScreen() {
                             {item.budgeted > 0 ? formatPercent(percent, 0) : '—'}
                           </Text>
                         </View>
-                        <View style={[styles.categoryBar, { backgroundColor: theme.colors.surfaceVariant }]}>
-                          <View
-                            style={[
-                              styles.categoryBarFill,
-                              {
-                                backgroundColor: isOverBudget ? theme.colors.expense : category.color,
-                                width: `${Math.min(percent, 100)}%`,
-                              },
-                            ]}
-                          />
-                        </View>
+                        {item.budgeted > 0 && (
+                          <View style={[styles.categoryBar, { backgroundColor: theme.colors.surfaceVariant }]}>
+                            <View
+                              style={[
+                                styles.categoryBarFill,
+                                {
+                                  backgroundColor: isOverBudget ? theme.colors.expense : category.color,
+                                  width: `${Math.min(percent, 100)}%`,
+                                },
+                              ]}
+                            />
+                          </View>
+                        )}
                       </>
                     )}
                   </View>
@@ -586,6 +667,9 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: typography.fontSize.sm,
+  },
+  chartCard: {
+    marginBottom: 16,
   },
   categoryCard: {
     marginBottom: 16,

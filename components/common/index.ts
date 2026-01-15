@@ -6,5 +6,6 @@ export { Card, StatCard } from './Card';
 export { GlassCard } from './GlassCard';
 export { Modal, ConfirmDialog } from './Modal';
 export { MilitaryBackground } from './MilitaryBackground';
+export { PieChart, BarChart, ProgressBar } from './Charts';
 
 // Additional common components can be added here
