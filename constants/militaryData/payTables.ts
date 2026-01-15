@@ -170,6 +170,14 @@ export const SPECIAL_PAY_RATES = {
     specialist: 275,
     supervisor: 340,
   },
+  specialDutyAssignmentPay: {
+    sd1: 75,
+    sd2: 150,
+    sd3: 225,
+    sd4: 300,
+    sd5: 375,
+    sd6: 450,
+  },
 };
 
 // Get base pay for a specific rank and years of service

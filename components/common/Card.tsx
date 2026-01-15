@@ -6,6 +6,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  StyleProp,
   ViewStyle,
 } from 'react-native';
 import { useTheme } from '../../hooks';
@@ -16,7 +17,7 @@ interface CardProps {
   title?: string;
   subtitle?: string;
   onPress?: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   noPadding?: boolean;
 }
 
