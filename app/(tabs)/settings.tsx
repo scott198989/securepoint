@@ -135,6 +135,20 @@ export default function SettingsScreen() {
         />
       </Card>
 
+      {/* Data Management Section */}
+      <Card style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>
+          DATA MANAGEMENT
+        </Text>
+        <SettingsItem
+          label="Manage Categories"
+          onPress={() => router.push('/manage-categories')}
+          rightElement={
+            <Text style={{ color: theme.colors.primary }}>Edit</Text>
+          }
+        />
+      </Card>
+
       {/* Appearance Section */}
       <Card style={styles.section}>
         <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>

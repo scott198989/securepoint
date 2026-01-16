@@ -78,7 +78,7 @@ export default function TransactionsScreen() {
       <TouchableOpacity
         style={[styles.transactionItem, { backgroundColor: theme.colors.card }]}
         onPress={() => {
-          // Navigate to transaction detail/edit
+          router.push(`/edit-transaction?id=${item.id}`);
         }}
         activeOpacity={0.7}
       >

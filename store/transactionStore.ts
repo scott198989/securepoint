@@ -46,6 +46,7 @@ interface TransactionState {
 
   // Utility
   initializeCategories: () => void;
+  initializeAccounts: () => void;
   getTotalBalance: () => number;
 }
 
@@ -302,6 +303,27 @@ export const useTransactionStore = create<TransactionState>()(
         ];
 
         set({ categories: allCategories });
+      },
+
+      // Initialize default account
+      initializeAccounts: () => {
+        const { accounts } = get();
+        if (accounts.length > 0) return;
+
+        // Create a default checking account
+        const now = new Date().toISOString();
+        const defaultAccount: Account = {
+          id: 'default-checking',
+          name: 'Checking Account',
+          type: 'checking',
+          balance: 0,
+          currency: 'USD',
+          isDefault: true,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        set({ accounts: [defaultAccount] });
       },
 
       getTotalBalance: () => {

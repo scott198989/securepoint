@@ -12,9 +12,13 @@ interface UseTransactionsReturn {
   addTransaction: (transaction: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt'>) => string;
   updateTransaction: (id: string, updates: Partial<Transaction>) => void;
   deleteTransaction: (id: string) => void;
+  getTransactionById: (id: string) => Transaction | undefined;
   getFilteredTransactions: (filter: TransactionFilter) => Transaction[];
   getCategory: (id: string) => Category | undefined;
   getAccount: (id: string) => Account | undefined;
+  addCategory: (category: Omit<Category, 'id'>) => string;
+  updateCategory: (id: string, updates: Partial<Category>) => void;
+  deleteCategory: (id: string) => void;
   expenseCategories: Category[];
   incomeCategories: Category[];
 }
@@ -42,9 +46,13 @@ export function useTransactions(): UseTransactionsReturn {
     addTransaction: store.addTransaction,
     updateTransaction: store.updateTransaction,
     deleteTransaction: store.deleteTransaction,
+    getTransactionById: store.getTransactionById,
     getFilteredTransactions: store.getFilteredTransactions,
     getCategory,
     getAccount,
+    addCategory: store.addCategory,
+    updateCategory: store.updateCategory,
+    deleteCategory: store.deleteCategory,
     expenseCategories,
     incomeCategories,
   };

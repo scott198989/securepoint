@@ -10,11 +10,12 @@ import { useTransactionStore } from '../store';
 
 function RootLayoutNav() {
   const theme = useTheme();
-  const { initializeCategories } = useTransactionStore();
+  const { initializeCategories, initializeAccounts } = useTransactionStore();
 
   useEffect(() => {
-    // Initialize default categories on first load
+    // Initialize default categories and accounts on first load
     initializeCategories();
+    initializeAccounts();
   }, []);
 
   return (
@@ -32,6 +33,20 @@ function RootLayoutNav() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="add-transaction"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name="edit-transaction"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name="manage-categories"
           options={{
             presentation: 'modal',
             animation: 'slide_from_bottom',

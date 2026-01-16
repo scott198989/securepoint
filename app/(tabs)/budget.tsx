@@ -21,8 +21,8 @@ import { typography, borderRadius, spacing } from '../../constants/theme';
 
 interface BudgetItem {
   categoryId: string;
-  budgeted: number;
-  spent: number;
+  budgeted: number; // Target amount
+  actual: number; // Manually entered actual spent
 }
 
 export default function BudgetScreen() {
@@ -50,11 +50,10 @@ export default function BudgetScreen() {
 
     if (activeBudget?.categories && activeBudget.categories.length > 0) {
       const items = activeBudget.categories.map((cb) => {
-        const spending = monthlySummary.byCategory.find((s) => s.categoryId === cb.categoryId);
         return {
           categoryId: cb.categoryId,
           budgeted: cb.budgeted,
-          spent: spending?.total || 0,
+          actual: cb.spent, // Use saved actual amount
         };
       });
       setBudgetItems(items);
@@ -63,29 +62,16 @@ export default function BudgetScreen() {
     } else if (expenseCategories.length > 0) {
       // Initialize with all expense categories
       const items = expenseCategories.map((cat) => {
-        const spending = monthlySummary.byCategory.find((s) => s.categoryId === cat.id);
         return {
           categoryId: cat.id,
           budgeted: 0,
-          spent: spending?.total || 0,
+          actual: 0,
         };
       });
       setBudgetItems(items);
       setInitialized(true);
     }
-  }, [activeBudget, monthlySummary.byCategory, expenseCategories, initialized]);
-
-  // Update spent amounts when transactions change (but don't reset budgeted)
-  useEffect(() => {
-    if (!initialized || budgetItems.length === 0) return;
-
-    setBudgetItems((prev) =>
-      prev.map((item) => {
-        const spending = monthlySummary.byCategory.find((s) => s.categoryId === item.categoryId);
-        return { ...item, spent: spending?.total || 0 };
-      })
-    );
-  }, [monthlySummary.byCategory, initialized]);
+  }, [activeBudget, expenseCategories, initialized]);
 
   const getCategoryInfo = useCallback(
     (categoryId: string) => {
@@ -104,10 +90,15 @@ export default function BudgetScreen() {
     [budgetItems]
   );
 
-  const totalSpent = monthlySummary.totalExpenses;
-  const budgetAmount = parseFloat(totalMonthlyBudget) || totalBudgeted;
-  const remaining = budgetAmount - totalSpent;
-  const spentPercent = budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0;
+  const totalActual = useMemo(
+    () => budgetItems.reduce((sum, item) => sum + item.actual, 0),
+    [budgetItems]
+  );
+
+  const budgetAmount = parseFloat(totalMonthlyBudget) || 0;
+  const remaining = budgetAmount - totalActual;
+  const spentPercent = budgetAmount > 0 ? (totalActual / budgetAmount) * 100 : 0;
+  const targetDifference = budgetAmount - totalBudgeted; // Positive = under budget, Negative = over allocated
 
   const handleBudgetChange = (categoryId: string, value: string) => {
     const numValue = parseFloat(value) || 0;
@@ -118,13 +109,21 @@ export default function BudgetScreen() {
     );
   };
 
+  const handleActualChange = (categoryId: string, value: string) => {
+    const numValue = parseFloat(value) || 0;
+    setBudgetItems((prev) =>
+      prev.map((item) =>
+        item.categoryId === categoryId ? { ...item, actual: numValue } : item
+      )
+    );
+  };
+
   const handleAddCategory = (categoryId: string) => {
     if (budgetItems.find((item) => item.categoryId === categoryId)) return;
 
-    const spending = monthlySummary.byCategory.find((s) => s.categoryId === categoryId);
     setBudgetItems((prev) => [
       ...prev,
-      { categoryId, budgeted: 0, spent: spending?.total || 0 },
+      { categoryId, budgeted: 0, actual: 0 },
     ]);
     setShowAddCategory(false);
   };
@@ -139,12 +138,12 @@ export default function BudgetScreen() {
     const totalBudgetAmount = parseFloat(totalMonthlyBudget) || totalBudgeted;
 
     const budgetCategories = budgetItems
-      .filter((item) => item.budgeted > 0) // Only save categories with budget set
+      .filter((item) => item.budgeted > 0 || item.actual > 0) // Save categories with budget or actual set
       .map((item) => ({
         categoryId: item.categoryId,
         budgeted: item.budgeted,
-        spent: item.spent,
-        remaining: item.budgeted - item.spent,
+        spent: item.actual, // Store actual as spent
+        remaining: item.budgeted - item.actual,
         rollover: false,
       }));
 
@@ -152,7 +151,7 @@ export default function BudgetScreen() {
       updateBudget(activeBudget.id, {
         name: `${formatMonthYear(now)} Budget`,
         totalBudgeted: totalBudgetAmount,
-        totalSpent: totalSpent,
+        totalSpent: totalActual,
         categories: budgetCategories,
       });
     } else {
@@ -163,7 +162,7 @@ export default function BudgetScreen() {
         startDate: now.toISOString(),
         endDate: endOfMonth.toISOString(),
         totalBudgeted: totalBudgetAmount,
-        totalSpent: totalSpent,
+        totalSpent: totalActual,
         categories: budgetCategories,
         isActive: true,
       });
@@ -187,13 +186,13 @@ export default function BudgetScreen() {
   // Chart data
   const pieChartData = useMemo(() => {
     return budgetItems
-      .filter((item) => item.spent > 0)
-      .sort((a, b) => b.spent - a.spent)
+      .filter((item) => item.actual > 0)
+      .sort((a, b) => b.actual - a.actual)
       .slice(0, 6)
       .map((item) => {
         const category = getCategoryInfo(item.categoryId);
         return {
-          value: item.spent,
+          value: item.actual,
           color: category.color,
           label: category.name,
         };
@@ -202,13 +201,13 @@ export default function BudgetScreen() {
 
   const barChartData = useMemo(() => {
     return budgetItems
-      .filter((item) => item.budgeted > 0)
+      .filter((item) => item.budgeted > 0 || item.actual > 0)
       .sort((a, b) => b.budgeted - a.budgeted)
       .slice(0, 6)
       .map((item) => {
         const category = getCategoryInfo(item.categoryId);
         return {
-          value: item.spent,
+          value: item.actual,
           maxValue: item.budgeted,
           color: category.color,
           label: category.name,
@@ -322,13 +321,40 @@ export default function BudgetScreen() {
             </View>
             <View style={styles.progressLabels}>
               <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>
-                {formatCurrency(totalSpent)} spent
+                {formatCurrency(totalActual)} spent
               </Text>
               <Text style={[styles.progressText, { color: theme.colors.textSecondary }]}>
                 {formatPercent(spentPercent, 0)} of budget
               </Text>
             </View>
           </View>
+
+          {/* Budget Allocation Comparison */}
+          {budgetAmount > 0 && (
+            <View style={[styles.allocationSection, { borderTopColor: theme.colors.border }]}>
+              <View style={styles.allocationRow}>
+                <Text style={[styles.allocationLabel, { color: theme.colors.textSecondary }]}>
+                  Category Targets Total
+                </Text>
+                <Text style={[styles.allocationValue, { color: theme.colors.text }]}>
+                  {formatCurrency(totalBudgeted)}
+                </Text>
+              </View>
+              <View style={styles.allocationRow}>
+                <Text style={[styles.allocationLabel, { color: theme.colors.textSecondary }]}>
+                  {targetDifference >= 0 ? 'Unallocated' : 'Over-allocated'}
+                </Text>
+                <Text
+                  style={[
+                    styles.allocationValue,
+                    { color: targetDifference >= 0 ? theme.colors.income : theme.colors.expense },
+                  ]}
+                >
+                  {formatCurrency(Math.abs(targetDifference))}
+                </Text>
+              </View>
+            </View>
+          )}
         </Card>
 
         {/* Spending Pie Chart */}
@@ -373,7 +399,7 @@ export default function BudgetScreen() {
             <>
               {budgetItems.map((item, index) => {
                 const category = getCategoryInfo(item.categoryId);
-                const percent = item.budgeted > 0 ? (item.spent / item.budgeted) * 100 : 0;
+                const percent = item.budgeted > 0 ? (item.actual / item.budgeted) * 100 : 0;
                 const isOverBudget = percent > 100;
 
                 return (
@@ -408,7 +434,7 @@ export default function BudgetScreen() {
                       <View style={styles.editRow}>
                         <View style={styles.budgetInputContainer}>
                           <Text style={[styles.smallLabel, { color: theme.colors.textSecondary }]}>
-                            Budget
+                            Target
                           </Text>
                           <View style={styles.smallInputRow}>
                             <Text style={[styles.smallCurrency, { color: theme.colors.text }]}>$</Text>
@@ -431,20 +457,37 @@ export default function BudgetScreen() {
                             />
                           </View>
                         </View>
-                        <View style={styles.spentContainer}>
+                        <View style={styles.budgetInputContainer}>
                           <Text style={[styles.smallLabel, { color: theme.colors.textSecondary }]}>
-                            Spent
+                            Actual
                           </Text>
-                          <Text style={[styles.spentAmount, { color: theme.colors.expense }]}>
-                            {formatCurrency(item.spent)}
-                          </Text>
+                          <View style={styles.smallInputRow}>
+                            <Text style={[styles.smallCurrency, { color: theme.colors.text }]}>$</Text>
+                            <TextInput
+                              style={[
+                                styles.smallInput,
+                                {
+                                  color: theme.colors.text,
+                                  borderColor: theme.colors.border,
+                                  backgroundColor: theme.isDark
+                                    ? 'rgba(255,255,255,0.05)'
+                                    : 'rgba(0,0,0,0.05)',
+                                },
+                              ]}
+                              value={item.actual > 0 ? item.actual.toString() : ''}
+                              onChangeText={(value) => handleActualChange(item.categoryId, value)}
+                              keyboardType="numeric"
+                              placeholder="0"
+                              placeholderTextColor={theme.colors.placeholder}
+                            />
+                          </View>
                         </View>
                       </View>
                     ) : (
                       <>
                         <View style={styles.amountRow}>
                           <Text style={[styles.spentText, { color: theme.colors.text }]}>
-                            {formatCurrency(item.spent)}
+                            {formatCurrency(item.actual)}
                             {item.budgeted > 0 && ` / ${formatCurrency(item.budgeted)}`}
                           </Text>
                           <Text
@@ -668,6 +711,24 @@ const styles = StyleSheet.create({
   progressText: {
     fontSize: typography.fontSize.sm,
   },
+  allocationSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+  },
+  allocationRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  allocationLabel: {
+    fontSize: typography.fontSize.sm,
+  },
+  allocationValue: {
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.semibold,
+  },
   chartCard: {
     marginBottom: 16,
   },
@@ -749,14 +810,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderWidth: 1,
     borderRadius: borderRadius.sm,
-  },
-  spentContainer: {
-    alignItems: 'flex-end',
-    minWidth: 80,
-  },
-  spentAmount: {
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.semibold,
   },
   amountRow: {
     flexDirection: 'row',
