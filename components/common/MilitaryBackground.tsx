@@ -15,46 +15,38 @@ interface MilitaryBackgroundProps {
 
 // Branch-specific image positioning to ensure emblems display correctly
 const getImageStyleForBranch = (branch?: MilitaryBranch, status?: MilitaryStatus): ImageStyle => {
-  // Default style - centered
+  // Default style - cover to fill screen, centered
   const defaultStyle: ImageStyle = {
     resizeMode: 'cover',
   };
 
   if (!branch) return defaultStyle;
 
-  // Army - emblem was too low, move it up
+  // Army - use cover and position to show emblem better
   if (branch === 'army' && status !== 'national_guard' && status !== 'reserve') {
     return {
-      resizeMode: 'contain',
-      top: -50, // Move emblem up
+      resizeMode: 'cover',
     };
   }
 
-  // Air Force - emblem wasn't visible, ensure it's centered and visible
+  // Air Force - use cover
   if (branch === 'air_force' && status !== 'national_guard' && status !== 'reserve') {
     return {
-      resizeMode: 'contain',
+      resizeMode: 'cover',
     };
   }
 
-  // Army National Guard - emblem too big, scale it down
+  // Army National Guard - scale down slightly
   if (branch === 'army' && status === 'national_guard') {
     return {
-      resizeMode: 'contain',
-      transform: [{ scale: 0.8 }],
+      resizeMode: 'cover',
+      transform: [{ scale: 0.9 }],
     };
   }
 
-  // Air National Guard
-  if (branch === 'air_force' && status === 'national_guard') {
-    return {
-      resizeMode: 'contain',
-    };
-  }
-
-  // Default for other branches - use contain for better emblem visibility
+  // Default for all other branches - use cover
   return {
-    resizeMode: 'contain',
+    resizeMode: 'cover',
   };
 };
 
